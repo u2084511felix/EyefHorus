@@ -1,0 +1,121 @@
+
+#~~~~~~~~~~~~potential~~~~~~~~~~~~~~#
+
+'''
+potential use cases and functions:
+1. simple chat bot editing.
+2. exporting chat logs or conversations.
+3. inception prompting like the camel framework.
+4. executing functions based on the output of agents.
+5. running multiple agents at once.
+
+
+-- multi agent system --
+
+1 heirarchial agent that controls the system messages for all the sub agents.
+
+Method:
+    takes a user input and transforms the user input into a usable system message for sub agents.
+
+subagetns then run concurrently such that they ecxecute the required functions to complete the task.
+potential functions include the ability to run bash commands, download repos, search local docs and vector storage... etc
+
+'''
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+###################################
+#~~~~~~~~~~~~ Config ~~~~~~~~~~~~~#
+
+import openai
+import os
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+Eqline = "====================================== \n"
+
+import openai
+import os
+
+class ChatAgent:
+    def __init__(self, role, model="gpt-3.5-turbo", max_tokens=4000, temperature=0.5):
+        self.role = role
+        self.model = model
+        self.max_tokens = max_tokens
+        self.temperature = temperature
+        self.messages = []
+
+    def add_message(self, role, content):
+        self.messages.append({"role": role, "content": content})
+
+    def generate_response(self, user_input):
+        self.add_message("user", user_input)
+        response = openai.ChatCompletion.create(
+            model=self.model,
+            messages=self.messages,
+            max_tokens=self.max_tokens,
+            temperature=self.temperature,
+        )
+        return response.choices[0].message.content
+
+class EyeOfHorus:
+    def __init__(self, initial_goal):
+        self.agents = {}
+        self.initial_goal = initial_goal
+        self.measurables = self.generate_measurables(initial_goal)
+        self.add_agent("SystemAgent")
+        self.add_agent("InstructionAgent")
+
+    def add_agent(self, agent_name, role="assistant", model="gpt-3.5-turbo", max_tokens=4000, temperature=0.5):
+        self.agents[agent_name] = ChatAgent(role, model, max_tokens, temperature)
+
+    def generate_measurables(self, goal): # method that generates measurables based on the initial goal
+        
+
+
+    def handle_input(self, user_input, agent_name):
+        if agent_name in self.agents:
+            return self.agents[agent_name].generate_response(user_input)
+        else:
+            return "Invalid agent name."
+
+    def generate_system_message(self, content):
+        for agent in self.agents.values():
+            agent.add_message("system", content)
+
+    def check_satisfaction(self): # Stub for method that checks satisfaction based on the initial goal and measurables
+        # Logic for checking satisfaction
+
+
+        
+
+
+
+    def run(self):
+        # Generate system messages to initialise agents
+        self.generate_system_message("Initialising agents...")
+        
+        # Give InstructionAgent a set of goals
+        self.handle_input(self.initial_goal, "InstructionAgent")
+
+        while not self.check_satisfaction():
+            for agent_name, agent in self.agents.items():
+                if agent_name != "SystemAgent" and agent_name != "InstructionAgent":
+                    # Run each subagent until the task is completed satisfactorily
+                    self.handle_input(self.initial_goal, agent_name)
+
+        print("All tasks completed satisfactorily.")
+
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
+def main():
+    initial_goal = "Insert your initial goal here."
+    # Create an EyeOfHorus controller
+    eye_of_horus = EyeOfHorus(initial_goal)
+
+    # Add agents to the system
+    eye_of_horus.add_agent("assistant_1")
+    eye_of_horus.add_agent("assistant_2")
+
+    # Run the EyeOfHorus
+    eye_of_horus.run()
+
+if __name__ == "__main__":
+    main()
